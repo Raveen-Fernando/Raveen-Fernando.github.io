@@ -1,123 +1,126 @@
-import { useKeenSlider } from "keen-slider/react";
-import "keen-slider/keen-slider.min.css";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { Button } from "./ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React from 'react';
+import { ProjectSlideshow, ProjectImage } from './ProjectSlideshow';
 
 interface Project {
   title: string;
   description: string;
-  images: string[];
+  images: ProjectImage[];
 }
 
 const projects: Project[] = [
   {
-    title: "Glider Project",
-    description: "Designed and constructed a functional glider model, implementing aerodynamic principles and lightweight materials for optimal performance.",
+    title: 'Glider Project',
+    description: 'Designed and constructed a functional glider model...',
     images: [
-      "https://images.unsplash.com/photo-1487887235947-a955ef187fcc",
-      "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
+      {
+        url: '/assets/Glider/1.jpg',
+        title: 'Design Phase',
+        description: 'Initial CAD modeling and simulations',
+      },
+      {
+        url: '/assets/Glider/2.HEIC',
+        title: 'Construction',
+        description: 'Assembly of primary components',
+      },
+      {
+        url: '/assets/Glider/3.JPG',
+        title: 'Testing',
+        description: 'Wind tunnel validation',
+      },
+      {
+        url: '/assets/Glider/4.JPG',
+        title: 'Final Product',
+        description: 'Completed glider ready for flight',
+      },
     ],
   },
   {
-    title: "CNC Routing Machine",
-    description: "Built a custom CNC routing machine from scratch, incorporating precision controls and automated toolpath generation.",
+    title: 'CNC Routing Machine',
+    description: 'Built a custom CNC routing machine from scratch...',
     images: [
-      "https://images.unsplash.com/photo-1518770660439-4636190af475",
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
+      {
+        url: '/assets/CNC Router/1.jpg',
+        title: 'Framework',
+        description: 'Base structure assembly',
+      },
+      {
+        url: '/assets/CNC Router/2.jpg',
+        title: 'Electronics',
+        description: 'Control system integration',
+      },
+      {
+        url: '/assets/CNC Router/3.jpg',
+        title: 'Software',
+        description: 'Custom firmware implementation',
+      },
+      {
+        url: '/assets/CNC Router/4.jpg',
+        title: 'Operation',
+        description: 'Machine in action',
+      },
     ],
   },
   {
-    title: "Mountaineer Shield",
-    description: "Led the development of protective equipment, combining innovative design with practical functionality.",
+    title: 'Mountaineer Shield',
+    description: 'Led the development of innovative protective equipment...',
     images: [
-      "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
-    ],
-  },
-  {
-    title: "Telecaster Guitar Build",
-    description: "Handcrafted a custom Telecaster guitar, showcasing woodworking skills and attention to detail in musical instrument construction.",
-    images: [
-      "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085",
+      {
+        url: '/assets/placeholder.png',
+        title: 'Prototyping',
+        description: 'Initial design iterations',
+      },
+      {
+        url: '/assets/placeholder.png',
+        title: 'Testing',
+        description: 'Field trials in various conditions',
+      },
+      {
+        url: '/assets/placeholder.png',
+        title: 'Refinement',
+        description: 'Design optimizations',
+      },
+      {
+        url: '/assets/placeholder.png',
+        title: 'Production',
+        description: 'Final manufacturing process',
+      },
     ],
   },
 ];
 
-const ProjectSlider = ({ images }: { images: string[] }) => {
-  const [sliderRef, instanceRef] = useKeenSlider({
-    slides: {
-      perView: 1,
-      spacing: 16,
-    },
-  });
-
+export const ProjectsSection: React.FC = () => {
   return (
-    <div className="relative">
-      <div ref={sliderRef} className="keen-slider h-[300px] rounded-lg">
-        {images.map((image, idx) => (
-          <div key={idx} className="keen-slider__slide">
-            <img
-              src={image}
-              alt={`Project image ${idx + 1}`}
-              className="w-full h-full object-cover rounded-lg"
-            />
-          </div>
-        ))}
-      </div>
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 hover:bg-white"
-        onClick={() => instanceRef.current?.prev()}
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 hover:bg-white"
-        onClick={() => instanceRef.current?.next()}
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
-    </div>
-  );
-};
-
-const Projects = () => {
-  return (
-    <section id="projects" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="animate-fadeIn opacity-0" style={{ animationDelay: "0.2s" }}>
-          <h2 className="text-3xl font-bold text-primary mb-12 text-center">
-            Projects
-          </h2>
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-2">
-          {projects.map((project, idx) => (
-            <div
-              key={idx}
+      <section id="projects" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
               className="animate-fadeIn opacity-0"
-              style={{ animationDelay: `${0.2 * (idx + 2)}s` }}
-            >
-              <Card>
-                <CardHeader>
-                  <CardTitle>{project.title}</CardTitle>
-                  <CardDescription>{project.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ProjectSlider images={project.images} />
-                </CardContent>
-              </Card>
-            </div>
-          ))}
+              style={{ animationDelay: '0.2s' }}
+          >
+            <h2 className="text-4xl font-bold text-primary mb-16 text-center tracking-tight">
+              Projects
+            </h2>
+          </div>
+
+          <div className="space-y-20">
+            {projects.map((project, idx) => (
+                <div
+                    key={idx}
+                    className="animate-fadeIn opacity-0"
+                    style={{ animationDelay: `${0.2 * (idx + 2)}s` }}
+                >
+                  <div className="text-center mb-4">
+                    <h3 className="text-2xl font-semibold mb-2">
+                      {project.title}
+                    </h3>
+                    <p className="text-gray-600 max-w-2xl mx-auto">
+                      {project.description}
+                    </p>
+                  </div>
+                  <ProjectSlideshow images={project.images} />
+                </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
   );
 };
-
-export default Projects;
