@@ -1,263 +1,295 @@
-import React from 'react';
-import { ProjectSlideshow, ProjectImage } from './ProjectSlideshow';
+import React, { useState, useEffect } from "react";
+import { Card } from "./ui/card";
+import { Music, UtensilsCrossed, Dumbbell, ChevronRight, ChevronLeft } from "lucide-react";
+import { useKeenSlider } from "keen-slider/react";
+import "keen-slider/keen-slider.min.css";
+import { useIsMobile } from "../hooks/use-mobile";
+import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
 
 interface Interest {
     title: string;
     description: string;
-    images: ProjectImage[];
+    icon: React.ReactNode;
+    images?: string[];
+    subSections?: {
+        title: string;
+        description: string;
+        images: string[];
+    }[];
+    playlists?: string[];
 }
 
-/**
- * The original personalInterests array stays the same.
- */
-const personalInterests: Interest[] = [
+const interests: Interest[] = [
     {
-        title: 'Music',
-        description: 'Exploring various instruments, genres, and live performances.',
-        images: [
+        title: "Music",
+        description: "",
+        icon: <Music className="h-6 w-6 text-primary" />,
+        subSections: [
             {
-                url: '/assets/placeholder.png',
-                title: 'Practicing Guitar',
-                description: 'Daily routines and chord progressions',
+                title: "Solo Performances",
+                description: "I gig at local Morgantown places",
+                images: [
+                    "assets/Music/2.jpg",
+                    "assets/Music/4.jpg"
+                ]
             },
             {
-                url: '/assets/placeholder.png',
-                title: 'Live Concert',
-                description: 'Capturing the energy of a local rock show',
-            },
-            {
-                url: '/assets/placeholder.png',
-                title: 'Composing',
-                description: 'Experimenting with melodies in a home studio',
-            },
-            {
-                url: '/assets/placeholder.png',
-                title: 'Vinyl Collection',
-                description: 'A curated collection of classic records',
-            },
+                title: "My Band",
+                description: "Lead guitarist of The Showerheads",
+                images: [
+                    "assets/Music/3.jpg",
+
+                ]
+            }
         ],
+        playlists: [
+            "https://open.spotify.com/embed/playlist/6egRcaGlOn5HCuWGOCpoqJ?utm_source=generator",
+            "https://open.spotify.com/embed/playlist/62rZRBpbvPdhePDazgzgOL?utm_source=generator"
+        ]
     },
     {
-        title: 'Combat Sports',
-        description: 'Passionate about martial arts and the discipline it instills.',
+        title: "Combat Sports",
+        description: "Passionate about martial arts and the discipline it instills.",
+        icon: <Dumbbell className="h-6 w-6 text-primary" />,
         images: [
-            {
-                url: '/assets/Combat Sports/1.JPG',
-                title: 'Training Sessions',
-                description: 'Daily workouts focusing on technique',
-            },
-            {
-                url: '/assets/placeholder.png',
-                title: 'Sparring Practice',
-                description: 'Controlled practice fights',
-            },
-            {
-                url: '/assets/placeholder.png',
-                title: 'Tournaments',
-                description: 'Competitive events and championships',
-            },
-            {
-                url: '/assets/placeholder.png',
-                title: 'Strength & Conditioning',
-                description: 'Building endurance and core strength',
-            },
-        ],
+            "/assets/Combat Sports/1.JPG",
+            "/assets/Combat Sports/2.jpg"
+        ]
     },
     {
-        title: 'Cooking',
-        description: 'Experimenting in the kitchen to create new and exciting dishes.',
+        title: "Cooking",
+        description: "Experimenting in the kitchen to create new and exciting dishes.",
+        icon: <UtensilsCrossed className="h-6 w-6 text-primary" />,
         images: [
-            {
-                url: '/assets/placeholder.png',
-                title: 'Prep Work',
-                description: 'Chopping fresh ingredients',
-            },
-            {
-                url: '/assets/placeholder.png',
-                title: 'Plating',
-                description: 'Aesthetic arrangement of dishes',
-            },
-            {
-                url: '/assets/placeholder.png',
-                title: 'International Cuisine',
-                description: 'Recipes from around the world',
-            },
-            {
-                url: '/assets/placeholder.png',
-                title: 'Dessert',
-                description: 'Sweet delights with artistic flair',
-            },
-        ],
-    },
+            "/assets/Cooking/1.jpg",
+            "/assets/Cooking/2.jpg"
+        ]
+    }
 ];
 
-/**
- * Slideshows specifically for Music’s new subsections:
- * "Solo performances" and "My band".
- */
-const soloPerformancesImages: ProjectImage[] = [
-    {
-        url: '/assets/placeholder.png',
-        title: 'Acoustic Session',
-        description: 'Strumming unplugged at a local café',
-    },
-    {
-        url: '/assets/placeholder.png',
-        title: 'Open Mic',
-        description: 'Performing original songs live',
-    },
-    {
-        url: '/assets/placeholder.png',
-        title: 'Small Crowd',
-        description: 'An intimate audience in Morgantown',
-    },
-    {
-        url: '/assets/placeholder.png',
-        title: 'Street Performance',
-        description: 'Busking for passersby',
-    },
-];
+const preloadImage = (src: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = reject;
+        img.src = src;
+    });
+};
 
-const myBandImages: ProjectImage[] = [
-    {
-        url: '/assets/placeholder.png',
-        title: 'Band Practice',
-        description: 'Rehearsing new tracks',
-    },
-    {
-        url: '/assets/placeholder.png',
-        title: 'Live Show',
-        description: 'Headlining a local festival',
-    },
-    {
-        url: '/assets/placeholder.png',
-        title: 'Recording Studio',
-        description: 'Laying down vocals and instrumentals',
-    },
-    {
-        url: '/assets/placeholder.png',
-        title: 'Stage Presence',
-        description: 'Engaging with the crowd',
-    },
-];
+const InterestImages = ({ images }: { images: string[] }) => {
+    const isMobile = useIsMobile();
+    const [imagesLoaded, setImagesLoaded] = useState(false);
 
-export const PersonalInterestsSection: React.FC = () => {
+    useEffect(() => {
+        const loadImages = async () => {
+            try {
+                await Promise.all(images.map(src => preloadImage(src)));
+                console.log('All images preloaded successfully');
+                setImagesLoaded(true);
+            } catch (error) {
+                console.error('Error preloading images:', error);
+                // Still set as loaded to show images even if preload fails
+                setImagesLoaded(true);
+            }
+        };
+
+        loadImages();
+    }, [images]);
+
+    const [sliderRef] = useKeenSlider(
+        {
+            loop: true,
+            mode: "snap",
+            slides: {
+                perView: isMobile ? 1 : images.length,
+                spacing: 16
+            },
+            defaultAnimation: {
+                duration: 2000,
+            },
+        },
+        [
+            (slider) => {
+                let timeout: ReturnType<typeof setTimeout>;
+                let mouseOver = false;
+
+                function clearNextTimeout() {
+                    clearTimeout(timeout);
+                }
+
+                function nextTimeout() {
+                    clearTimeout(timeout);
+                    if (mouseOver) return;
+                    timeout = setTimeout(() => {
+                        slider.next();
+                    }, 3000);
+                }
+
+                slider.on("created", () => {
+                    nextTimeout();
+                });
+
+                slider.container.addEventListener("mouseover", () => {
+                    mouseOver = true;
+                    clearNextTimeout();
+                });
+
+                slider.container.addEventListener("mouseout", () => {
+                    mouseOver = false;
+                    nextTimeout();
+                });
+
+                slider.on("dragStarted", clearNextTimeout);
+                slider.on("animationEnded", nextTimeout);
+                slider.on("updated", nextTimeout);
+            },
+        ]
+    );
+
+    const renderImage = (image: string, idx: number) => (
+        <div key={idx} className="relative w-64 h-64">
+            {!imagesLoaded ? (
+                <Skeleton className="w-full h-full rounded-lg" />
+            ) : (
+                <img
+                    src={image}
+                    alt={`Interest image ${idx + 1}`}
+                    className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                    loading="eager"
+                />
+            )}
+        </div>
+    );
+
+    if (!isMobile) {
+        return (
+            <div className="flex justify-center gap-2">
+                {images.map((image, idx) => renderImage(image, idx))}
+            </div>
+        );
+    }
+
     return (
-        <section id="personal-interests" className="py-20 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div
-                    className="animate-fadeIn opacity-0"
-                    style={{ animationDelay: '0.2s' }}
+        <div ref={sliderRef} className="keen-slider">
+            {images.map((image, idx) => (
+                <div key={idx} className="keen-slider__slide flex items-center justify-center">
+                    {renderImage(image, idx)}
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const PlaylistNavigator = ({ playlists }: { playlists: string[] }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const isMobile = useIsMobile();
+
+    const handleNext = () => {
+        setCurrentIndex((prev) => (prev + 1) % playlists.length);
+    };
+
+    const handlePrev = () => {
+        setCurrentIndex((prev) => (prev - 1 + playlists.length) % playlists.length);
+    };
+
+    if (!isMobile) {
+        return (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {playlists.map((playlist, index) => (
+                    <iframe
+                        key={index}
+                        src={playlist}
+                        width="100%"
+                        height="352"
+                        frameBorder="0"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                    />
+                ))}
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            <div className="flex justify-center gap-2">
+                <Button
+                    variant="outline"
+                    onClick={handlePrev}
+                    disabled={playlists.length <= 1}
                 >
-                    <h2 className="text-4xl font-bold text-primary mb-16 text-center tracking-tight">
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                    variant="outline"
+                    onClick={handleNext}
+                    disabled={playlists.length <= 1}
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+            </div>
+            <iframe
+                key={currentIndex}
+                src={playlists[currentIndex]}
+                width="100%"
+                height="352"
+                frameBorder="0"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                loading="lazy"
+            />
+        </div>
+    );
+};
+
+const PersonalInterests = () => {
+    return (
+        <section id="interests" className="py-20 bg-section-gradient">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-16">
+                    <h2 className="text-4xl font-bold text-primary mb-4">
                         Personal Interests
                     </h2>
                 </div>
 
-                <div className="space-y-20">
-                    {personalInterests.map((interest, idx) => {
-                        // If this is the "Music" interest, show only the specified subsections
-                        if (interest.title === 'Music') {
-                            return (
-                                <div
-                                    key={idx}
-                                    className="animate-fadeIn opacity-0"
-                                    style={{ animationDelay: `${0.2 * (idx + 2)}s` }}
-                                >
-                                    {/* MAIN HEADING FOR MUSIC */}
-                                    <h3 className="text-2xl font-bold text-center mb-8">Music</h3>
-
-                                    {/* SOLO PERFORMANCES */}
-                                    <div className="mt-12">
-                                        <h4 className="text-xl font-semibold mb-2 text-center">
-                                            Solo performances
-                                        </h4>
-                                        <p className="text-gray-600 max-w-2xl mx-auto text-center mb-6">
-                                            I do gigs around the Morgantown area
-                                        </p>
-                                        <ProjectSlideshow images={soloPerformancesImages} />
+                <div className="space-y-8">
+                    {interests.map((interest, idx) => (
+                        <Card key={idx} className="p-6">
+                            <div className="space-y-6">
+                                <div className="text-center">
+                                    <div className="flex items-center justify-center gap-3 mb-2">
+                                        {interest.icon}
+                                        <h3 className="text-2xl font-semibold">{interest.title}</h3>
                                     </div>
-
-                                    {/* MY BAND */}
-                                    <div className="mt-16">
-                                        <h4 className="text-xl font-semibold mb-2 text-center">
-                                            My band
-                                        </h4>
-                                        <p className="text-gray-600 max-w-2xl mx-auto text-center mb-6">
-                                            I founded and lead{' '}
-                                            <a
-                                                href="https://instagram.com/your_band_page"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 underline"
-                                            >
-                                                The Showerheads
-                                            </a>{' '}
-                                            with my friends.
-                                        </p>
-                                        <ProjectSlideshow images={myBandImages} />
-                                    </div>
-
-                                    {/* MY PLAYLISTS (3 EMBEDS) */}
-                                    <div className="mt-16">
-                                        <h4 className="text-xl font-semibold mb-4 text-center">
-                                            My playlists
-                                        </h4>
-                                        <div className="flex flex-wrap justify-center gap-4">
-                                            {/* 1st Playlist */}
-                                            <iframe
-                                                src="https://open.spotify.com/embed/playlist/37i9dQZF1EpxsxasLkDTkk?utm_source=generator"
-                                                width="320"
-                                                height="380"
-                                                frameBorder="0"
-                                                allow="encrypted-media"
-                                                className="rounded-md"
-                                            />
-                                            {/* 2nd Playlist */}
-                                            <iframe
-                                                src="https://open.spotify.com/embed/playlist/6egRcaGlOn5HCuWGOCpoqJ?utm_source=generator"
-                                                width="320"
-                                                height="380"
-                                                frameBorder="0"
-                                                allow="encrypted-media"
-                                                className="rounded-md"
-                                            />
-                                            {/* 3rd Playlist */}
-                                            <iframe
-                                                src="https://open.spotify.com/embed/playlist/26BfH6xkfCMwUgbPyL3ekg?utm_source=generator"
-                                                width="320"
-                                                height="380"
-                                                frameBorder="0"
-                                                allow="encrypted-media"
-                                                className="rounded-md"
-                                            />
-                                        </div>
-                                    </div>
+                                    <p className="text-gray-600 mb-6">{interest.description}</p>
                                 </div>
-                            );
-                        }
 
-                        // Otherwise, for Combat Sports and Cooking, leave them exactly as is
-                        return (
-                            <div
-                                key={idx}
-                                className="animate-fadeIn opacity-0"
-                                style={{ animationDelay: `${0.2 * (idx + 2)}s` }}
-                            >
-                                <div className="text-center mb-4">
-                                    <h3 className="text-2xl font-semibold mb-2">
-                                        {interest.title}
-                                    </h3>
-                                    <p className="text-gray-600 max-w-2xl mx-auto">
-                                        {interest.description}
-                                    </p>
-                                </div>
-                                <ProjectSlideshow images={interest.images} />
+                                {interest.subSections ? (
+                                    <div className="space-y-8">
+                                        {interest.subSections.map((subSection, subIdx) => (
+                                            <div key={subIdx} className="space-y-4">
+                                                <h4 className="text-xl font-semibold text-center">{subSection.title}</h4>
+                                                <p className="text-gray-600 text-center mb-4">{subSection.description}</p>
+                                                <InterestImages images={subSection.images} />
+                                            </div>
+                                        ))}
+                                        {interest.playlists && (
+                                            <div className="space-y-4">
+                                                <h4 className="text-xl font-semibold text-center">My Playlists</h4>
+                                                <PlaylistNavigator playlists={interest.playlists} />
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    interest.images && <InterestImages images={interest.images} />
+                                )}
                             </div>
-                        );
-                    })}
+                        </Card>
+                    ))}
                 </div>
             </div>
         </section>
     );
 };
+
+export default PersonalInterests;

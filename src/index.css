@@ -96,6 +96,31 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-transparent text-foreground;
   }
 }
+/* Headshot Glow */
+.glow-headshot {
+  box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.8); /* White glow */
+  border-radius: 50%; /* Keep the glow circular */
+}
+
+/* Text Glow */
+.glow-text h1,
+.glow-text p {
+  text-shadow:
+          0 0 10px rgba(255, 255, 255, 0.8),
+          0 0 20px rgba(255, 255, 255, 0.6);
+}
+
+/* Button Glow */
+.glow-button a {
+  box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.8); /* White glow for button */
+  transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.glow-button a:hover {
+  box-shadow: 0 0 25px 8px rgba(255, 255, 255, 1); /* Brighter glow on hover */
+  transform: scale(1.05); /* Slight hover effect */
+}
+

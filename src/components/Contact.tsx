@@ -36,7 +36,7 @@ const ContactSection = () => {
     };
 
     return (
-        <section id="contact" className="py-20 bg-gray-50">
+        <section id="contact" className="py-20 bg-gradient-to-b from-gradient-start to-gradient-mid">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="animate-fadeIn opacity-0" style={{ animationDelay: "0.2s" }}>
                     <h2 className="text-3xl font-bold text-primary mb-12 text-center">
